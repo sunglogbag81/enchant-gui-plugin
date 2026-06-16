@@ -1,0 +1,28 @@
+name: EnchantGUI
+version: ${project.version}
+main: io.github.sunglogbag81.enchantgui.EnchantGuiPlugin
+api-version: '1.20'
+author: sunglogbag81
+description: 설정 기반 GUI 인챈트 플러그인
+softdepend: [PlaceholderAPI]
+commands:
+  인챈트:
+    description: 인챈트 GUI를 엽니다.
+    usage: /인챈트 [reload|give|list]
+    aliases: [enchantgui, egui]
+permissions:
+  enchantgui.use:
+    description: 인챈트 GUI를 사용할 수 있습니다.
+    default: true
+  enchantgui.admin:
+    description: 인챈트 GUI 관리자 기능을 사용할 수 있습니다.
+    default: op
+  enchantgui.reload:
+    description: 설정을 다시 불러올 수 있습니다.
+    default: op
+  enchantgui.give:
+    description: 강화권과 보조 아이템을 지급할 수 있습니다.
+    default: op
+  enchantgui.list:
+    description: 등록된 강화권과 보조 아이템 목록을 볼 수 있습니다.
+    default: op

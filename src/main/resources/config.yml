@@ -1,0 +1,203 @@
+gui:
+  title: "&#6d9dfc인챈트 제작소"
+  size: 27
+  item-slot: 11
+  token-slot: 15
+  booster-slot: 20
+  protection-slot: 24
+  preview-slot: 13
+  apply-slot: 22
+  filler-material: BLACK_STAINED_GLASS_PANE
+  filler-name: " "
+
+features:
+  sounds: true
+  particles: true
+  preview-lore: true
+  close-return-items: true
+  block-shift-move-into-gui: true
+  require-permission: true
+  allow-unsafe-enchants: false
+  allow-over-vanilla-max-level: false
+  require-pdc-token: true
+  allow-plain-name-fallback: false
+  enable-boosters: true
+  enable-protection-items: true
+  enable-multi-enchant-tokens: true
+  enable-flat-file-logging: true
+  enable-sqlite-logging: true
+  enable-placeholderapi: true
+  announce-success: false
+  announce-failure: false
+
+messages:
+  prefix: "&#6d9dfc[인챈트] &f"
+  no-permission: "&c권한이 없습니다."
+  player-only: "&c플레이어만 사용할 수 있습니다."
+  config-reloaded: "&a설정을 다시 불러왔습니다."
+  invalid-token: "&c강화권 슬롯에 올바른 아이템을 넣어주세요."
+  invalid-item: "&c강화할 장비를 올려주세요."
+  invalid-target: "&c해당 강화권은 이 장비에 사용할 수 없습니다."
+  no-effect: "&e이미 같은 수준 이상으로 적용되어 있습니다."
+  success: "&a강화 성공! %token% 적용 완료 (최종 확률 %chance%%)"
+  fail: "&c강화 실패... (최종 확률 %chance%%)"
+  protected-fail: "&e보호권이 발동해 장비 파괴/하락 패널티를 막았습니다."
+  token-given: "&a%player%에게 %token% x%amount% 지급 완료"
+  booster-given: "&a%player%에게 %booster% x%amount% 지급 완료"
+  protection-given: "&a%player%에게 %protection% x%amount% 지급 완료"
+  unknown-entry: "&c해당 키를 찾을 수 없습니다: %key%"
+  usage-admin: "&e/인챈트 reload | /인챈트 list | /인챈트 give <player> <token|booster|protection> <key> [amount]"
+  opened: "&7인챈트 GUI를 열었습니다."
+  returned-items: "&e남은 아이템을 인벤토리로 반환했습니다."
+
+logging:
+  flat-file-name: attempts.log
+  sqlite-file: enchantgui.db
+
+chance:
+  min-final: 0.0
+  max-final: 100.0
+
+failure-defaults:
+  consume-token-on-success: true
+  consume-token-on-fail: true
+  consume-booster-on-success: true
+  consume-booster-on-fail: true
+  consume-protection-on-trigger: true
+  destroy-item-on-fail: false
+  remove-target-enchants-on-fail: false
+  downgrade-target-enchants-on-fail: 0
+
+sounds:
+  success:
+    enabled: true
+    sound: ENTITY_PLAYER_LEVELUP
+    volume: 1.0
+    pitch: 1.2
+  fail:
+    enabled: true
+    sound: ENTITY_VILLAGER_NO
+    volume: 1.0
+    pitch: 1.0
+
+particles:
+  success:
+    enabled: true
+    particle: FIREWORKS_SPARK
+    count: 40
+    offset-x: 0.6
+    offset-y: 0.8
+    offset-z: 0.6
+    extra: 0.1
+  fail:
+    enabled: true
+    particle: SMOKE_NORMAL
+    count: 24
+    offset-x: 0.4
+    offset-y: 0.6
+    offset-z: 0.4
+    extra: 0.02
+
+preview:
+  waiting-name: "&7강화 정보 대기중"
+  waiting-lore:
+    - "&8장비와 강화권을 올려두면"
+    - "&8적용 결과가 표시됩니다."
+  ready-name: "&#6d9dfc강화 미리보기"
+  ready-lore:
+    - "&f강화권: &b%token%"
+    - "&f적용 인챈트: &e%enchants%"
+    - "&f기본 확률: &a%base_chance%%%"
+    - "&f보정 확률: &a%boost%%%"
+    - "&f최종 확률: &6%final_chance%%%"
+    - "&f보호권: &e%protection%"
+    - "&7클릭하여 강화 시도"
+
+protection-item:
+  enabled: true
+  key: basic_guard
+  material: TOTEM_OF_UNDYING
+  display-name: "&#ffdf6b강화 보호권"
+  lore:
+    - "&7실패 시 장비 파괴/하락 패널티를"
+    - "&7한 번 막아줍니다."
+  consume-on-trigger: true
+
+tokens:
+  sharpness_1:
+    enabled: true
+    material: PAPER
+    display-name: "&#6d9dfc날카로움 I 강화권"
+    lore:
+      - "&7검/도끼 계열에 사용 가능"
+      - "&7기본 성공 확률: &a80%"
+    chance: 80.0
+    operation: SET
+    allow-on-bookshelf-items: false
+    target-groups: [SWORDS, AXES]
+    target-materials: []
+    failure:
+      destroy-item-on-fail: false
+      remove-target-enchants-on-fail: false
+      downgrade-target-enchants-on-fail: 0
+    enchants:
+      - id: sharpness
+        level: 1
+  sharpness_3_risky:
+    enabled: true
+    material: ENCHANTED_BOOK
+    display-name: "&#ff8c42날카로움 III 고위험 강화권"
+    lore:
+      - "&7성공 시 날카로움 III 적용"
+      - "&c실패 시 장비가 파괴될 수 있음"
+    chance: 35.0
+    operation: SET
+    target-groups: [SWORDS, AXES]
+    target-materials: []
+    failure:
+      destroy-item-on-fail: true
+      remove-target-enchants-on-fail: false
+      downgrade-target-enchants-on-fail: 0
+    enchants:
+      - id: sharpness
+        level: 3
+  protection_combo:
+    enabled: true
+    material: BOOK
+    display-name: "&#9effa2보호/내구성 복합 강화권"
+    lore:
+      - "&7갑옷에 보호 I, 내구성 II 적용"
+      - "&7다중 인챈트 예시"
+    chance: 65.0
+    operation: SET
+    target-groups: [ARMOR]
+    target-materials: []
+    failure:
+      destroy-item-on-fail: false
+      remove-target-enchants-on-fail: false
+      downgrade-target-enchants-on-fail: 1
+    enchants:
+      - id: protection
+        level: 1
+      - id: unbreaking
+        level: 2
+
+boosters:
+  lucky_dust_small:
+    enabled: true
+    material: GLOWSTONE_DUST
+    display-name: "&#f7f779행운의 가루 (+7%)"
+    lore:
+      - "&7강화 확률을 7% 올려줍니다."
+    chance-bonus: 7.0
+    consume-on-success: true
+    consume-on-fail: true
+  lucky_dust_big:
+    enabled: true
+    material: BLAZE_POWDER
+    display-name: "&#f7b25f행운의 가루 (+15%)"
+    lore:
+      - "&7강화 확률을 15% 올려줍니다."
+    chance-bonus: 15.0
+    consume-on-success: true
+    consume-on-fail: true
