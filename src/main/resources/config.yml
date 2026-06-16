@@ -1,95 +1,278 @@
+# ==============================
+# EnchantGUI 기본 설정 파일
+# ==============================
+#
+# 색상 코드:
+# - 일반 색상: &a, &b, &c 같은 Bukkit 색상 코드 사용 가능
+# - HEX 색상: &#6d9dfc 같은 형식 사용 가능
+#
+# 퍼센트 표기:
+# - 플레이스홀더 뒤에 %를 붙이고 싶으면 %chance% 처럼 그대로 쓰면 됩니다.
+# - 예: "최종 확률 %chance%)"
+#
+# 메시지 끄기:
+# - messages 아래 항목을 "" 로 비우거나 아예 삭제하면 그 메시지는 출력되지 않습니다.
+#
+# 슬롯 번호:
+# - GUI 슬롯은 0부터 시작합니다.
+# - 잘못된 슬롯 번호(예: size보다 큰 값)를 넣으면 서버 오류 대신 해당 요소만 무시됩니다.
+#
+# target-groups에서 사용 가능한 대표 그룹 예시:
+# - SWORDS, AXES, PICKAXES, SHOVELS, HOES
+# - HELMETS, CHESTPLATES, LEGGINGS, BOOTS, ARMOR
+# - BOWS, CROSSBOWS, TRIDENTS, FISHING_RODS
+#
+# operation 설명:
+# - SET: 지정한 레벨로 맞춤
+# - ADD: 현재 레벨에 더함
+# - MAX: 현재 레벨과 설정 레벨 중 더 높은 값 사용
+
+# GUI 배치 및 외형 설정
 gui:
+  # GUI 상단 제목
   title: "&#6d9dfc인챈트 제작소"
+
+  # GUI 크기 (반드시 9의 배수 권장: 27, 36, 45, 54)
   size: 27
+
+  # 강화할 장비를 올려두는 슬롯
   item-slot: 11
+
+  # 강화권을 올려두는 슬롯
   token-slot: 15
+
+  # 확률 증가 아이템(부스터)을 올려두는 슬롯
   booster-slot: 20
+
+  # 보호권을 올려두는 슬롯
   protection-slot: 24
+
+  # 강화 결과 미리보기가 표시되는 슬롯
   preview-slot: 13
+
+  # 강화 시도를 실행하는 버튼 슬롯
   apply-slot: 22
+
+  # 비어 있는 칸을 채우는 장식 아이템 재질
   filler-material: BLACK_STAINED_GLASS_PANE
+
+  # 장식 아이템 이름
+  # 공백 한 칸(" ")으로 두면 이름이 사실상 보이지 않습니다.
   filler-name: " "
 
+# 기능 ON/OFF 토글
 features:
+  # 성공/실패 시 사운드 재생 여부
   sounds: true
+
+  # 성공/실패 시 파티클 재생 여부
   particles: true
+
+  # 미리보기 아이템 lore 표시 기능 사용 여부
   preview-lore: true
+
+  # GUI 닫을 때 안에 남은 아이템을 자동 반환할지 여부
   close-return-items: true
+
+  # Shift+클릭으로 GUI 안에 아이템을 밀어 넣는 행동 차단 여부
   block-shift-move-into-gui: true
+
+  # /인챈트 사용 시 권한 검사 여부
   require-permission: true
+
+  # 바닐라 제한을 넘는 unsafe enchant 허용 여부
   allow-unsafe-enchants: false
+
+  # 바닐라 최대 레벨 초과 허용 여부
+  # false면 예: Sharpness V를 넘기지 않도록 제한
   allow-over-vanilla-max-level: false
+
+  # PDC(플러그인 고유 태그)가 붙은 강화권만 인정할지 여부
+  # true 권장. false로 두면 이름만 비슷한 아이템도 fallback 허용 가능성이 생깁니다.
   require-pdc-token: true
+
+  # PDC가 없어도 display-name 기준으로 강화권/보조 아이템을 찾을지 여부
   allow-plain-name-fallback: false
+
+  # 부스터 아이템 시스템 사용 여부
   enable-boosters: true
+
+  # 보호권 시스템 사용 여부
   enable-protection-items: true
+
+  # 하나의 강화권에 여러 인챈트를 넣는 기능 허용 여부
   enable-multi-enchant-tokens: true
+
+  # 로그 파일(attempts.log) 기록 여부
   enable-flat-file-logging: true
+
+  # SQLite(enchantgui.db) 기록 여부
   enable-sqlite-logging: true
+
+  # PlaceholderAPI 연동 사용 여부
   enable-placeholderapi: true
+
+  # 강화 성공 시 전체 서버에 알림 브로드캐스트 여부
   announce-success: false
+
+  # 강화 실패 시 전체 서버에 알림 브로드캐스트 여부
   announce-failure: false
 
+# 채팅 메시지 설정
 messages:
+  # 모든 메시지 앞에 붙는 공통 접두사
+  # 비우면 접두사 없이 출력됩니다.
   prefix: "&#6d9dfc[인챈트] &f"
+
+  # 권한이 없을 때
   no-permission: "&c권한이 없습니다."
+
+  # 콘솔 등 플레이어가 아닌 대상이 GUI 명령을 썼을 때
   player-only: "&c플레이어만 사용할 수 있습니다."
+
+  # /인챈트 reload 성공 시
   config-reloaded: "&a설정을 다시 불러왔습니다."
+
+  # 강화권 슬롯에 올바른 아이템이 없을 때
   invalid-token: "&c강화권 슬롯에 올바른 아이템을 넣어주세요."
+
+  # 장비 슬롯에 올바른 아이템이 없을 때
   invalid-item: "&c강화할 장비를 올려주세요."
+
+  # 해당 장비에 사용할 수 없는 강화권일 때
   invalid-target: "&c해당 강화권은 이 장비에 사용할 수 없습니다."
+
+  # 이미 같은 수준 이상으로 적용돼서 실제 변화가 없을 때
   no-effect: "&e이미 같은 수준 이상으로 적용되어 있습니다."
+
+  # 강화 성공 시
+  # 사용 가능 플레이스홀더: %token%, %chance%
   success: "&a강화 성공! %token% 적용 완료 (최종 확률 %chance%)"
+
+  # 강화 실패 시
+  # 사용 가능 플레이스홀더: %chance%
   fail: "&c강화 실패... (최종 확률 %chance%)"
+
+  # 보호권이 발동해 실패 패널티를 막았을 때
   protected-fail: "&e보호권이 발동해 장비 파괴/하락 패널티를 막았습니다."
+
+  # /인챈트 give token 성공 시
+  # 사용 가능 플레이스홀더: %player%, %token%, %amount%
   token-given: "&a%player%에게 %token% x%amount% 지급 완료"
+
+  # /인챈트 give booster 성공 시
+  # 사용 가능 플레이스홀더: %player%, %booster%, %amount%
   booster-given: "&a%player%에게 %booster% x%amount% 지급 완료"
+
+  # /인챈트 give protection 성공 시
+  # 사용 가능 플레이스홀더: %player%, %protection%, %amount%
   protection-given: "&a%player%에게 %protection% x%amount% 지급 완료"
+
+  # 존재하지 않는 키를 입력했을 때
+  # 사용 가능 플레이스홀더: %key%
   unknown-entry: "&c해당 키를 찾을 수 없습니다: %key%"
+
+  # 관리자용 명령어 사용법
   usage-admin: "&e/인챈트 reload | /인챈트 list | /인챈트 give <player> <token|booster|protection> <key> [amount]"
+
+  # GUI를 열었을 때
   opened: "&7인챈트 GUI를 열었습니다."
+
+  # GUI 종료 시 남은 아이템을 돌려줬을 때
   returned-items: "&e남은 아이템을 인벤토리로 반환했습니다."
 
+# 로그 파일 이름 설정
 logging:
+  # 평문 로그 파일 이름
   flat-file-name: attempts.log
+
+  # SQLite DB 파일 이름
   sqlite-file: enchantgui.db
 
+# 최종 확률 제한값
 chance:
+  # 최종 확률 최소값
   min-final: 0.0
+
+  # 최종 확률 최대값
   max-final: 100.0
 
+# 실패 처리 기본값
+# 각 토큰에서 별도로 failure 설정을 넣으면 그 값이 우선됩니다.
 failure-defaults:
+  # 성공 시 강화권 소모 여부
   consume-token-on-success: true
+
+  # 실패 시 강화권 소모 여부
   consume-token-on-fail: true
+
+  # 성공 시 부스터 소모 여부
   consume-booster-on-success: true
+
+  # 실패 시 부스터 소모 여부
   consume-booster-on-fail: true
+
+  # 보호권이 실제 발동했을 때 소모할지 여부
   consume-protection-on-trigger: true
+
+  # 실패 시 장비 자체를 파괴할지 여부
   destroy-item-on-fail: false
+
+  # 실패 시 대상 장비의 모든 인챈트를 제거할지 여부
   remove-target-enchants-on-fail: false
+
+  # 실패 시 대상 장비 인챈트 레벨을 몇 단계 내릴지
+  # 0이면 하락 없음
   downgrade-target-enchants-on-fail: 0
 
+# 성공/실패 사운드 설정
 sounds:
   success:
+    # 성공 사운드 개별 활성화
     enabled: true
+
+    # Bukkit/Paper 사운드 enum 이름
     sound: ENTITY_PLAYER_LEVELUP
+
+    # 볼륨
     volume: 1.0
+
+    # 피치
     pitch: 1.2
+
   fail:
+    # 실패 사운드 개별 활성화
     enabled: true
     sound: ENTITY_VILLAGER_NO
     volume: 1.0
     pitch: 1.0
 
+# 성공/실패 파티클 설정
 particles:
   success:
+    # 성공 파티클 개별 활성화
     enabled: true
+
+    # Bukkit/Paper 파티클 enum 이름
     particle: FIREWORKS_SPARK
+
+    # 생성 개수
     count: 40
+
+    # 위치 퍼짐 범위 X
     offset-x: 0.6
+
+    # 위치 퍼짐 범위 Y
     offset-y: 0.8
+
+    # 위치 퍼짐 범위 Z
     offset-z: 0.6
+
+    # 파티클 extra 값
     extra: 0.1
+
   fail:
+    # 실패 파티클 개별 활성화
     enabled: true
     particle: SMOKE_NORMAL
     count: 24
@@ -98,12 +281,27 @@ particles:
     offset-z: 0.4
     extra: 0.02
 
+# GUI 미리보기 아이템 설정
 preview:
+  # 아직 장비/강화권이 안 들어왔을 때 표시 이름
   waiting-name: "&7강화 정보 대기중"
+
+  # 아직 입력이 부족할 때 표시할 lore
   waiting-lore:
     - "&8장비와 강화권을 올려두면"
     - "&8적용 결과가 표시됩니다."
+
+  # 강화 가능 상태일 때 표시 이름
   ready-name: "&#6d9dfc강화 미리보기"
+
+  # 강화 가능 상태일 때 표시할 lore
+  # 사용 가능 플레이스홀더:
+  # - %token%        : 강화권 이름
+  # - %enchants%     : 적용될 인챈트 목록
+  # - %base_chance%  : 강화권 기본 확률
+  # - %boost%        : 부스터 보너스 확률
+  # - %final_chance% : 최종 확률
+  # - %protection%   : 보호권 사용 여부/이름
   ready-lore:
     - "&f강화권: &b%token%"
     - "&f적용 인챈트: &e%enchants%"
@@ -113,36 +311,73 @@ preview:
     - "&f보호권: &e%protection%"
     - "&7클릭하여 강화 시도"
 
+# 보호권 설정
 protection-item:
+  # 보호권 기능 자체 활성화 여부
   enabled: true
+
+  # 내부 식별 키
   key: basic_guard
+
+  # 지급/표시될 아이템 재질
   material: TOTEM_OF_UNDYING
+
+  # 표시 이름
   display-name: "&#ffdf6b강화 보호권"
+
+  # 아이템 lore
   lore:
     - "&7실패 시 장비 파괴/하락 패널티를"
     - "&7한 번 막아줍니다."
+
+  # 실제 발동 시 아이템 소모 여부
   consume-on-trigger: true
 
+# 강화권 목록
+# 각 키(sharpness_1 등)는 관리자 지급 명령에 사용됩니다.
 tokens:
   sharpness_1:
+    # 해당 강화권 사용 가능 여부
     enabled: true
+
+    # 아이템 재질
     material: PAPER
+
+    # 표시 이름
     display-name: "&#6d9dfc날카로움 I 강화권"
+
+    # 설명 문구
     lore:
       - "&7검/도끼 계열에 사용 가능"
       - "&7기본 성공 확률: &a80%"
+
+    # 기본 성공 확률
     chance: 80.0
+
+    # 적용 방식: SET / ADD / MAX
     operation: SET
+
+    # 책장류 같은 특정 아이템 허용 여부
     allow-on-bookshelf-items: false
+
+    # 허용 대상 그룹
     target-groups: [SWORDS, AXES]
+
+    # 개별 재질 화이트리스트
+    # 비워두면 그룹 기준으로만 판정
     target-materials: []
+
+    # 이 강화권만의 실패 처리 설정
     failure:
       destroy-item-on-fail: false
       remove-target-enchants-on-fail: false
       downgrade-target-enchants-on-fail: 0
+
+    # 실제 적용할 인챈트 목록
     enchants:
       - id: sharpness
         level: 1
+
   sharpness_3_risky:
     enabled: true
     material: ENCHANTED_BOOK
@@ -155,12 +390,14 @@ tokens:
     target-groups: [SWORDS, AXES]
     target-materials: []
     failure:
+      # true면 실패 시 장비가 사라질 수 있음
       destroy-item-on-fail: true
       remove-target-enchants-on-fail: false
       downgrade-target-enchants-on-fail: 0
     enchants:
       - id: sharpness
         level: 3
+
   protection_combo:
     enabled: true
     material: BOOK
@@ -175,6 +412,8 @@ tokens:
     failure:
       destroy-item-on-fail: false
       remove-target-enchants-on-fail: false
+
+      # 실패 시 대상 인챈트를 1단계 내림
       downgrade-target-enchants-on-fail: 1
     enchants:
       - id: protection
@@ -182,16 +421,32 @@ tokens:
       - id: unbreaking
         level: 2
 
+# 확률 증가 아이템 목록
+# 각 키(lucky_dust_small 등)는 관리자 지급 명령에 사용됩니다.
 boosters:
   lucky_dust_small:
+    # 사용 가능 여부
     enabled: true
+
+    # 아이템 재질
     material: GLOWSTONE_DUST
+
+    # 표시 이름
     display-name: "&#f7f779행운의 가루 (+7%)"
+
+    # 설명 문구
     lore:
       - "&7강화 확률을 7% 올려줍니다."
+
+    # 더해질 확률 값
     chance-bonus: 7.0
+
+    # 성공 시 소모 여부
     consume-on-success: true
+
+    # 실패 시 소모 여부
     consume-on-fail: true
+
   lucky_dust_big:
     enabled: true
     material: BLAZE_POWDER
