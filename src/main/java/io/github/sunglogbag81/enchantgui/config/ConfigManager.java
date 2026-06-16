@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -21,6 +22,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public final class ConfigManager {
@@ -90,7 +92,7 @@ public final class ConfigManager {
         tokens.clear();
         boosters.clear();
 
-        prefix = ColorUtil.colorize(config.getString("messages.prefix", "&7[EnchantGUI] &f"));
+        prefix = optionalText(config, "messages.prefix");
         guiTitle = ColorUtil.colorize(config.getString("gui.title", "&b인챈트 제작소"));
         guiSize = normalizeSize(config.getInt("gui.size", 27));
         itemSlot = config.getInt("gui.item-slot", 11);
@@ -99,6 +101,12 @@ public final class ConfigManager {
         protectionSlot = config.getInt("gui.protection-slot", 24);
         previewSlot = config.getInt("gui.preview-slot", 13);
         applySlot = config.getInt("gui.apply-slot", 22);
+        warnIfSlotOutsideGui("gui.item-slot", itemSlot);
+        warnIfSlotOutsideGui("gui.token-slot", tokenSlot);
+        warnIfSlotOutsideGui("gui.booster-slot", boosterSlot);
+        warnIfSlotOutsideGui("gui.protection-slot", protectionSlot);
+        warnIfSlotOutsideGui("gui.preview-slot", previewSlot);
+        warnIfSlotOutsideGui("gui.apply-slot", applySlot);
         fillerMaterial = material(config.getString("gui.filler-material"), Material.BLACK_STAINED_GLASS_PANE);
         fillerName = ColorUtil.colorize(config.getString("gui.filler-name", " "));
 
@@ -317,15 +325,68 @@ public final class ConfigManager {
     }
 
     public String message(String key) {
-        return prefix + ColorUtil.colorize(plugin.getConfig().getString("messages." + key, key));
+        FileConfiguration config = plugin.getConfig();
+        String path = "messages." + key;
+        if (!config.contains(path)) {
+            return null;
+        }
+        String raw = config.getString(path);
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        return normalizePercents(prefix + ColorUtil.colorize(raw));
     }
 
     public String message(String key, Map<String, String> replacements) {
         String value = message(key);
+        if (value == null) {
+            return null;
+        }
         for (Map.Entry<String, String> entry : replacements.entrySet()) {
             value = value.replace(entry.getKey(), entry.getValue());
         }
-        return value;
+        return normalizePercents(value);
+    }
+
+    public void sendMessage(CommandSender sender, String key) {
+        sendRawMessage(sender, message(key));
+    }
+
+    public void sendMessage(CommandSender sender, String key, Map<String, String> replacements) {
+        sendRawMessage(sender, message(key, replacements));
+    }
+
+    public void sendRawMessage(CommandSender sender, String message) {
+        if (sender == null || message == null || message.isBlank()) {
+            return;
+        }
+        sender.sendMessage(ColorUtil.colorize(message));
+    }
+
+    public boolean isSlotInBounds(int slot) {
+        return slot >= 0 && slot < guiSize;
+    }
+
+    private String optionalText(FileConfiguration config, String path) {
+        String raw = config.getString(path);
+        if (raw == null || raw.isBlank()) {
+            return "";
+        }
+        return ColorUtil.colorize(raw);
+    }
+
+    private void warnIfSlotOutsideGui(String path, int slot) {
+        if (!isSlotInBounds(slot)) {
+            plugin.getLogger().warning(path + "=" + slot + " is outside gui.size=" + guiSize + "; that slot will be ignored.");
+        }
+    }
+
+    private String normalizePercents(String value) {
+        String normalized = Objects.requireNonNullElse(value, "");
+        while (normalized.contains("%%")) {
+            normalized = normalized.replace("%%", "%");
+        }
+        return normalized;
     }
 
     public Map<String, TokenDefinition> getTokens() {

@@ -34,11 +34,11 @@ public final class EnchantCommand implements CommandExecutor, TabCompleter {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length == 0) {
             if (!(sender instanceof Player player)) {
-                sender.sendMessage(configManager.message("player-only"));
+                configManager.sendMessage(sender, "player-only");
                 return true;
             }
             if (configManager.isRequirePermission() && !player.hasPermission("enchantgui.use")) {
-                player.sendMessage(configManager.message("no-permission"));
+                configManager.sendMessage(player, "no-permission");
                 return true;
             }
             plugin.openMenu(player);
@@ -51,7 +51,7 @@ public final class EnchantCommand implements CommandExecutor, TabCompleter {
             case "list" -> handleList(sender);
             case "give" -> handleGive(sender, args);
             default -> {
-                sender.sendMessage(configManager.message("usage-admin"));
+                configManager.sendMessage(sender, "usage-admin");
                 yield true;
             }
         };
@@ -59,39 +59,39 @@ public final class EnchantCommand implements CommandExecutor, TabCompleter {
 
     private boolean handleReload(CommandSender sender) {
         if (!sender.hasPermission("enchantgui.reload") && !sender.hasPermission("enchantgui.admin")) {
-            sender.sendMessage(configManager.message("no-permission"));
+            configManager.sendMessage(sender, "no-permission");
             return true;
         }
         plugin.reloadPlugin();
-        sender.sendMessage(configManager.message("config-reloaded"));
+        configManager.sendMessage(sender, "config-reloaded");
         return true;
     }
 
     private boolean handleList(CommandSender sender) {
         if (!sender.hasPermission("enchantgui.list") && !sender.hasPermission("enchantgui.admin")) {
-            sender.sendMessage(configManager.message("no-permission"));
+            configManager.sendMessage(sender, "no-permission");
             return true;
         }
-        sender.sendMessage(configManager.getPrefix() + "&f토큰: " + String.join(", ", configManager.getTokens().keySet()));
-        sender.sendMessage(configManager.getPrefix() + "&f부스터: " + String.join(", ", configManager.getBoosters().keySet()));
+        configManager.sendRawMessage(sender, configManager.getPrefix() + "&f토큰: " + String.join(", ", configManager.getTokens().keySet()));
+        configManager.sendRawMessage(sender, configManager.getPrefix() + "&f부스터: " + String.join(", ", configManager.getBoosters().keySet()));
         if (configManager.getProtectionItem() != null) {
-            sender.sendMessage(configManager.getPrefix() + "&f보호권: " + configManager.getProtectionItem().key());
+            configManager.sendRawMessage(sender, configManager.getPrefix() + "&f보호권: " + configManager.getProtectionItem().key());
         }
         return true;
     }
 
     private boolean handleGive(CommandSender sender, String[] args) {
         if (!sender.hasPermission("enchantgui.give") && !sender.hasPermission("enchantgui.admin")) {
-            sender.sendMessage(configManager.message("no-permission"));
+            configManager.sendMessage(sender, "no-permission");
             return true;
         }
         if (args.length < 4) {
-            sender.sendMessage(configManager.message("usage-admin"));
+            configManager.sendMessage(sender, "usage-admin");
             return true;
         }
         Player target = Bukkit.getPlayerExact(args[1]);
         if (target == null) {
-            sender.sendMessage(configManager.getPrefix() + "&c플레이어를 찾을 수 없습니다: " + args[1]);
+            configManager.sendRawMessage(sender, configManager.getPrefix() + "&c플레이어를 찾을 수 없습니다: " + args[1]);
             return true;
         }
         String type = args[2].toLowerCase(Locale.ROOT);
@@ -108,48 +108,48 @@ public final class EnchantCommand implements CommandExecutor, TabCompleter {
             case "token" -> {
                 TokenDefinition token = configManager.getToken(key);
                 if (token == null) {
-                    sender.sendMessage(configManager.message("unknown-entry", Map.of("%key%", key)));
+                    configManager.sendMessage(sender, "unknown-entry", Map.of("%key%", key));
                     return true;
                 }
                 var item = plugin.createTokenItem(token);
                 item.setAmount(amount);
                 target.getInventory().addItem(item);
-                sender.sendMessage(configManager.message("token-given", Map.of(
+                configManager.sendMessage(sender, "token-given", Map.of(
                         "%player%", target.getName(),
                         "%token%", token.displayName(),
                         "%amount%", String.valueOf(amount)
-                )));
+                ));
             }
             case "booster" -> {
                 SupportItemDefinition booster = configManager.getBooster(key);
                 if (booster == null) {
-                    sender.sendMessage(configManager.message("unknown-entry", Map.of("%key%", key)));
+                    configManager.sendMessage(sender, "unknown-entry", Map.of("%key%", key));
                     return true;
                 }
                 var item = plugin.createBoosterItem(booster);
                 item.setAmount(amount);
                 target.getInventory().addItem(item);
-                sender.sendMessage(configManager.message("booster-given", Map.of(
+                configManager.sendMessage(sender, "booster-given", Map.of(
                         "%player%", target.getName(),
                         "%booster%", booster.displayName(),
                         "%amount%", String.valueOf(amount)
-                )));
+                ));
             }
             case "protection" -> {
                 if (configManager.getProtectionItem() == null) {
-                    sender.sendMessage(configManager.getPrefix() + "&c보호권이 비활성화되어 있습니다.");
+                    configManager.sendRawMessage(sender, configManager.getPrefix() + "&c보호권이 비활성화되어 있습니다.");
                     return true;
                 }
                 var item = plugin.createProtectionItem();
                 item.setAmount(amount);
                 target.getInventory().addItem(item);
-                sender.sendMessage(configManager.message("protection-given", Map.of(
+                configManager.sendMessage(sender, "protection-given", Map.of(
                         "%player%", target.getName(),
                         "%protection%", configManager.getProtectionItem().displayName(),
                         "%amount%", String.valueOf(amount)
-                )));
+                ));
             }
-            default -> sender.sendMessage(configManager.message("usage-admin"));
+            default -> configManager.sendMessage(sender, "usage-admin");
         }
         return true;
     }

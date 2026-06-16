@@ -85,6 +85,9 @@ public final class EnchantGuiListener implements Listener {
         }
         boolean returned = false;
         for (int slot : inputSlots()) {
+            if (!configManager.isSlotInBounds(slot) || slot >= event.getInventory().getSize()) {
+                continue;
+            }
             ItemStack item = event.getInventory().getItem(slot);
             if (item == null || item.getType().isAir()) {
                 continue;
@@ -94,15 +97,15 @@ public final class EnchantGuiListener implements Listener {
             returned = true;
         }
         if (returned) {
-            player.sendMessage(configManager.message("returned-items"));
+            configManager.sendMessage(player, "returned-items");
         }
     }
 
     private boolean isAllowedInputSlot(int slot) {
-        return slot == configManager.getItemSlot()
-                || slot == configManager.getTokenSlot()
-                || slot == configManager.getBoosterSlot()
-                || slot == configManager.getProtectionSlot();
+        return isEnabledInputSlot(configManager.getItemSlot(), slot)
+                || isEnabledInputSlot(configManager.getTokenSlot(), slot)
+                || isEnabledInputSlot(configManager.getBoosterSlot(), slot)
+                || isEnabledInputSlot(configManager.getProtectionSlot(), slot);
     }
 
     private int[] inputSlots() {
@@ -112,5 +115,9 @@ public final class EnchantGuiListener implements Listener {
                 configManager.getBoosterSlot(),
                 configManager.getProtectionSlot()
         };
+    }
+
+    private boolean isEnabledInputSlot(int configuredSlot, int actualSlot) {
+        return configManager.isSlotInBounds(configuredSlot) && configuredSlot == actualSlot;
     }
 }

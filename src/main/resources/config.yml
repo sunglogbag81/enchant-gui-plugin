@@ -39,8 +39,8 @@ messages:
   invalid-item: "&c강화할 장비를 올려주세요."
   invalid-target: "&c해당 강화권은 이 장비에 사용할 수 없습니다."
   no-effect: "&e이미 같은 수준 이상으로 적용되어 있습니다."
-  success: "&a강화 성공! %token% 적용 완료 (최종 확률 %chance%%)"
-  fail: "&c강화 실패... (최종 확률 %chance%%)"
+  success: "&a강화 성공! %token% 적용 완료 (최종 확률 %chance%)"
+  fail: "&c강화 실패... (최종 확률 %chance%)"
   protected-fail: "&e보호권이 발동해 장비 파괴/하락 패널티를 막았습니다."
   token-given: "&a%player%에게 %token% x%amount% 지급 완료"
   booster-given: "&a%player%에게 %booster% x%amount% 지급 완료"
@@ -107,9 +107,9 @@ preview:
   ready-lore:
     - "&f강화권: &b%token%"
     - "&f적용 인챈트: &e%enchants%"
-    - "&f기본 확률: &a%base_chance%%%"
-    - "&f보정 확률: &a%boost%%%"
-    - "&f최종 확률: &6%final_chance%%%"
+    - "&f기본 확률: &a%base_chance%%"
+    - "&f보정 확률: &a%boost%%"
+    - "&f최종 확률: &6%final_chance%%"
     - "&f보호권: &e%protection%"
     - "&7클릭하여 강화 시도"
 

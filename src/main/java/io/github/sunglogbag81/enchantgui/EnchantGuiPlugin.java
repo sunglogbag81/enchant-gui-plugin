@@ -113,12 +113,12 @@ public final class EnchantGuiPlugin extends JavaPlugin {
             inventory.setItem(i, filler);
         }
 
-        inventory.setItem(configManager.getItemSlot(), null);
-        inventory.setItem(configManager.getTokenSlot(), null);
-        inventory.setItem(configManager.getBoosterSlot(), null);
-        inventory.setItem(configManager.getProtectionSlot(), null);
-        inventory.setItem(configManager.getApplySlot(), namedGuide(Material.EMERALD, "&#6d9dfc강화 시작", List.of("&7장비와 강화권을 넣으면 시도할 수 있습니다.")));
-        inventory.setItem(configManager.getPreviewSlot(), buildWaitingPreview());
+        clearSlot(inventory, configManager.getItemSlot());
+        clearSlot(inventory, configManager.getTokenSlot());
+        clearSlot(inventory, configManager.getBoosterSlot());
+        clearSlot(inventory, configManager.getProtectionSlot());
+        setIfValid(inventory, configManager.getApplySlot(), namedGuide(Material.EMERALD, "&#6d9dfc강화 시작", List.of("&7장비와 강화권을 넣으면 시도할 수 있습니다.")));
+        setIfValid(inventory, configManager.getPreviewSlot(), buildWaitingPreview());
         placeGuideIfFree(inventory, configManager.getItemSlot() - 1, Material.ANVIL, "&b장비 슬롯", List.of("&7오른쪽 빈 칸에 장비를 올려두세요."));
         placeGuideIfFree(inventory, configManager.getTokenSlot() + 1, Material.PAPER, "&e강화권 슬롯", List.of("&7왼쪽 빈 칸에 강화권을 올려두세요."));
         placeGuideIfFree(inventory, configManager.getBoosterSlot() - 1, Material.GLOWSTONE_DUST, "&6확률 증가", List.of("&7보정 아이템은 선택 사항입니다."));
@@ -140,13 +140,13 @@ public final class EnchantGuiPlugin extends JavaPlugin {
                                        String protectionLabel) {
         List<String> lore = new ArrayList<>();
         for (String line : configManager.getPreviewReadyLore()) {
-            lore.add(line
+            lore.add(normalizePercents(line
                     .replace("%token%", tokenName)
                     .replace("%enchants%", enchantSummary)
                     .replace("%base_chance%", formatChance(baseChance))
                     .replace("%boost%", formatChance(bonusChance))
                     .replace("%final_chance%", formatChance(finalChance))
-                    .replace("%protection%", protectionLabel));
+                    .replace("%protection%", protectionLabel)));
         }
         return namedGuide(Material.ENCHANTED_BOOK, configManager.getPreviewReadyName(), lore);
     }
@@ -197,12 +197,23 @@ public final class EnchantGuiPlugin extends JavaPlugin {
     }
 
     private void placeGuideIfFree(Inventory inventory, int slot, Material material, String name, List<String> lore) {
-        if (slot < 0 || slot >= inventory.getSize()) {
+        if (!configManager.isSlotInBounds(slot) || slot >= inventory.getSize()) {
             return;
         }
         if (inventory.getItem(slot) == null || inventory.getItem(slot).getType().isAir()) {
             inventory.setItem(slot, namedGuide(material, name, lore));
         }
+    }
+
+    private void clearSlot(Inventory inventory, int slot) {
+        setIfValid(inventory, slot, null);
+    }
+
+    private void setIfValid(Inventory inventory, int slot, ItemStack itemStack) {
+        if (!configManager.isSlotInBounds(slot) || slot >= inventory.getSize()) {
+            return;
+        }
+        inventory.setItem(slot, itemStack);
     }
 
     private ItemStack namedGuide(Material material, String name, List<String> lore) {
@@ -240,7 +251,7 @@ public final class EnchantGuiPlugin extends JavaPlugin {
 
     public void openMenu(Player player) {
         player.openInventory(createMenu(player));
-        player.sendMessage(configManager.message("opened"));
+        configManager.sendMessage(player, "opened");
     }
 
     public void storeAttempt(UUID uuid, AttemptContext context) {
@@ -253,6 +264,14 @@ public final class EnchantGuiPlugin extends JavaPlugin {
 
     public String formatChance(double value) {
         return String.format(java.util.Locale.US, "%.2f", value);
+    }
+
+    private String normalizePercents(String value) {
+        String normalized = value;
+        while (normalized.contains("%%")) {
+            normalized = normalized.replace("%%", "%");
+        }
+        return normalized;
     }
 
     public ConfigManager getPluginConfigManager() {

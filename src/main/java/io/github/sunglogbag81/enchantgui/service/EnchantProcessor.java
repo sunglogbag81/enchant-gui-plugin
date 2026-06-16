@@ -38,12 +38,12 @@ public final class EnchantProcessor {
     }
 
     public ValidationResult validate(Inventory inventory) {
-        ItemStack target = inventory.getItem(configManager.getItemSlot());
+        ItemStack target = getGuiItem(inventory, configManager.getItemSlot());
         if (isEmpty(target)) {
             return ValidationResult.error(configManager.message("invalid-item"));
         }
 
-        TokenDefinition token = resolveToken(inventory.getItem(configManager.getTokenSlot()));
+        TokenDefinition token = resolveToken(getGuiItem(inventory, configManager.getTokenSlot()));
         if (token == null || !token.enabled()) {
             return ValidationResult.error(configManager.message("invalid-token"));
         }
@@ -52,8 +52,8 @@ public final class EnchantProcessor {
             return ValidationResult.error(configManager.message("invalid-target"));
         }
 
-        SupportItemDefinition booster = resolveBooster(inventory.getItem(configManager.getBoosterSlot()));
-        SupportItemDefinition protection = resolveProtection(inventory.getItem(configManager.getProtectionSlot()));
+        SupportItemDefinition booster = resolveBooster(getGuiItem(inventory, configManager.getBoosterSlot()));
+        SupportItemDefinition protection = resolveProtection(getGuiItem(inventory, configManager.getProtectionSlot()));
 
         Map<Enchantment, Integer> resultLevels = new HashMap<>();
         List<String> appliedNames = new ArrayList<>();
@@ -75,7 +75,7 @@ public final class EnchantProcessor {
                 changed = true;
             }
             resultLevels.put(enchantment, nextLevel);
-            appliedNames.add(prettyEnchant(enchantment) + " " + nextLevel);
+            appliedNames.add(prettyEnchant(enchantment) + " " + formatEnchantLevel(nextLevel));
         }
 
         if (!changed) {
@@ -98,12 +98,15 @@ public final class EnchantProcessor {
     }
 
     public void refreshPreview(Inventory inventory) {
+        if (!configManager.isSlotInBounds(configManager.getPreviewSlot()) || configManager.getPreviewSlot() >= inventory.getSize()) {
+            return;
+        }
         ValidationResult result = validate(inventory);
         if (!result.ok()) {
             inventory.setItem(configManager.getPreviewSlot(), plugin.buildWaitingPreview());
             return;
         }
-        TokenDefinition token = resolveToken(inventory.getItem(configManager.getTokenSlot()));
+        TokenDefinition token = resolveToken(getGuiItem(inventory, configManager.getTokenSlot()));
         if (token == null) {
             inventory.setItem(configManager.getPreviewSlot(), plugin.buildWaitingPreview());
             return;
@@ -120,14 +123,14 @@ public final class EnchantProcessor {
     public void attempt(Player player, Inventory inventory) {
         ValidationResult validation = validate(inventory);
         if (!validation.ok()) {
-            player.sendMessage(validation.message());
+            configManager.sendRawMessage(player, validation.message());
             return;
         }
 
-        ItemStack item = inventory.getItem(configManager.getItemSlot());
-        ItemStack tokenItem = inventory.getItem(configManager.getTokenSlot());
-        ItemStack boosterItem = inventory.getItem(configManager.getBoosterSlot());
-        ItemStack protectionItem = inventory.getItem(configManager.getProtectionSlot());
+        ItemStack item = getGuiItem(inventory, configManager.getItemSlot());
+        ItemStack tokenItem = getGuiItem(inventory, configManager.getTokenSlot());
+        ItemStack boosterItem = getGuiItem(inventory, configManager.getBoosterSlot());
+        ItemStack protectionItem = getGuiItem(inventory, configManager.getProtectionSlot());
 
         TokenDefinition token = Objects.requireNonNull(resolveToken(tokenItem));
         SupportItemDefinition booster = resolveBooster(boosterItem);
@@ -151,7 +154,7 @@ public final class EnchantProcessor {
                     || failureSettings.downgradeTargetEnchantsOnFail() > 0;
             protectionTriggered = destructive && protection != null && protection.enabled() && configManager.isProtectionItemsEnabled();
             if (protectionTriggered) {
-                player.sendMessage(configManager.message("protected-fail"));
+                configManager.sendMessage(player, "protected-fail");
                 if (protection.consumeOnSuccess()) {
                     consumeIfNeeded(protectionItem, true);
                 }
@@ -268,9 +271,13 @@ public final class EnchantProcessor {
                 "%token%", tokenName,
                 "%chance%", plugin.formatChance(chance)
         );
-        player.sendMessage(configManager.message(success ? "success" : "fail", replacements));
+        configManager.sendMessage(player, success ? "success" : "fail", replacements);
         if ((success && configManager.isAnnounceSuccess()) || (!success && configManager.isAnnounceFailure())) {
-            Bukkit.broadcastMessage(configManager.getPrefix() + player.getName() + " -> " + tokenName + " : " + (success ? "SUCCESS" : "FAIL"));
+            String resultLabel = success ? "성공" : "실패";
+            String broadcast = configManager.getPrefix() + player.getName() + " -> " + tokenName + " : " + resultLabel;
+            if (!broadcast.isBlank()) {
+                Bukkit.broadcastMessage(broadcast);
+            }
         }
     }
 
@@ -386,6 +393,55 @@ public final class EnchantProcessor {
     }
 
     private String prettyEnchant(Enchantment enchantment) {
+        String translated = switch (enchantment.getKey().getKey()) {
+            case "protection" -> "보호";
+            case "fire_protection" -> "화염 보호";
+            case "feather_falling" -> "가벼운 착지";
+            case "blast_protection" -> "폭발 보호";
+            case "projectile_protection" -> "발사체 보호";
+            case "respiration" -> "호흡";
+            case "aqua_affinity" -> "친수성";
+            case "thorns" -> "가시";
+            case "depth_strider" -> "물갈퀴";
+            case "frost_walker" -> "차가운 걸음";
+            case "binding_curse" -> "귀속 저주";
+            case "soul_speed" -> "소울 스피드";
+            case "swift_sneak" -> "신속한 잠행";
+            case "sharpness" -> "날카로움";
+            case "smite" -> "강타";
+            case "bane_of_arthropods" -> "살충";
+            case "knockback" -> "밀치기";
+            case "fire_aspect" -> "발화";
+            case "looting" -> "약탈";
+            case "sweeping", "sweeping_edge" -> "휩쓸기";
+            case "efficiency" -> "효율";
+            case "silk_touch" -> "섬세한 손길";
+            case "unbreaking" -> "내구성";
+            case "fortune" -> "행운";
+            case "power" -> "힘";
+            case "punch" -> "밀어내기";
+            case "flame" -> "화염";
+            case "infinity" -> "무한";
+            case "luck_of_the_sea" -> "바다의 행운";
+            case "lure" -> "미끼";
+            case "loyalty" -> "충성";
+            case "impaling" -> "찌르기";
+            case "riptide" -> "급류";
+            case "channeling" -> "집전";
+            case "multishot" -> "다중 발사";
+            case "quick_charge" -> "빠른 장전";
+            case "piercing" -> "관통";
+            case "mending" -> "수선";
+            case "vanishing_curse" -> "소실 저주";
+            case "density" -> "밀집";
+            case "breach" -> "파열";
+            case "wind_burst" -> "돌풍";
+            default -> fallbackEnchantName(enchantment);
+        };
+        return translated;
+    }
+
+    private String fallbackEnchantName(Enchantment enchantment) {
         String key = enchantment.getKey().getKey().replace('_', ' ');
         String[] parts = key.split(" ");
         StringBuilder builder = new StringBuilder();
@@ -400,8 +456,34 @@ public final class EnchantProcessor {
         return builder.toString().trim();
     }
 
+    private String formatEnchantLevel(int level) {
+        if (level <= 0) {
+            return String.valueOf(level);
+        }
+        return switch (level) {
+            case 1 -> "I";
+            case 2 -> "II";
+            case 3 -> "III";
+            case 4 -> "IV";
+            case 5 -> "V";
+            case 6 -> "VI";
+            case 7 -> "VII";
+            case 8 -> "VIII";
+            case 9 -> "IX";
+            case 10 -> "X";
+            default -> String.valueOf(level);
+        };
+    }
+
     private double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
+    }
+
+    private ItemStack getGuiItem(Inventory inventory, int slot) {
+        if (!configManager.isSlotInBounds(slot) || slot >= inventory.getSize()) {
+            return null;
+        }
+        return inventory.getItem(slot);
     }
 
     private boolean isEmpty(ItemStack itemStack) {
