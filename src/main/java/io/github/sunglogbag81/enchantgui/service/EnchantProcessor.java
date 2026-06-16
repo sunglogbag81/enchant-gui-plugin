@@ -166,7 +166,7 @@ public final class EnchantProcessor {
             sendResultMessage(player, false, token.displayName(), validation.finalChance());
         }
 
-        plugin.storeAttempt(player.getUniqueId(), new AttemptContext(
+        AttemptContext context = new AttemptContext(
                 token.key(),
                 booster == null ? null : booster.key(),
                 protectionTriggered,
@@ -174,8 +174,15 @@ public final class EnchantProcessor {
                 validation.bonusChance(),
                 validation.finalChance(),
                 success
+        );
+        plugin.storeAttempt(player.getUniqueId(), context);
+        attemptLogger.log(AttemptLogger.snapshot(
+                player.getName(),
+                player.getUniqueId().toString(),
+                item == null ? "AIR" : item.getType().name(),
+                context,
+                validation
         ));
-        attemptLogger.log(player, item, plugin.getLastAttempt(player.getUniqueId()), validation);
         refreshPreview(inventory);
     }
 

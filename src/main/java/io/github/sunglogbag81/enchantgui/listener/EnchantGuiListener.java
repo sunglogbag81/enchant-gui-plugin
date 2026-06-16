@@ -14,8 +14,6 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Set;
-
 public final class EnchantGuiListener implements Listener {
     private final EnchantGuiPlugin plugin;
     private final ConfigManager configManager;
@@ -50,7 +48,7 @@ public final class EnchantGuiListener implements Listener {
                 event.setCancelled(true);
                 return;
             }
-            if (!allowedInputSlots().contains(slot)) {
+            if (!isAllowedInputSlot(slot)) {
                 event.setCancelled(true);
                 return;
             }
@@ -69,7 +67,7 @@ public final class EnchantGuiListener implements Listener {
         }
         int topSize = event.getView().getTopInventory().getSize();
         for (int rawSlot : event.getRawSlots()) {
-            if (rawSlot < topSize && !allowedInputSlots().contains(rawSlot)) {
+            if (rawSlot < topSize && !isAllowedInputSlot(rawSlot)) {
                 event.setCancelled(true);
                 return;
             }
@@ -86,7 +84,7 @@ public final class EnchantGuiListener implements Listener {
             return;
         }
         boolean returned = false;
-        for (int slot : allowedInputSlots()) {
+        for (int slot : inputSlots()) {
             ItemStack item = event.getInventory().getItem(slot);
             if (item == null || item.getType().isAir()) {
                 continue;
@@ -100,12 +98,19 @@ public final class EnchantGuiListener implements Listener {
         }
     }
 
-    private Set<Integer> allowedInputSlots() {
-        return Set.of(
+    private boolean isAllowedInputSlot(int slot) {
+        return slot == configManager.getItemSlot()
+                || slot == configManager.getTokenSlot()
+                || slot == configManager.getBoosterSlot()
+                || slot == configManager.getProtectionSlot();
+    }
+
+    private int[] inputSlots() {
+        return new int[]{
                 configManager.getItemSlot(),
                 configManager.getTokenSlot(),
                 configManager.getBoosterSlot(),
                 configManager.getProtectionSlot()
-        );
+        };
     }
 }

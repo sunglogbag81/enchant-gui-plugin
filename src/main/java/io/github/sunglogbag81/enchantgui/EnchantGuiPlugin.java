@@ -35,6 +35,7 @@ public final class EnchantGuiPlugin extends JavaPlugin {
     private ConfigManager configManager;
     private AttemptLogger attemptLogger;
     private EnchantProcessor enchantProcessor;
+    private EnchantGuiExpansion placeholderExpansion;
     private final Map<UUID, AttemptContext> lastAttempts = new HashMap<>();
     private NamespacedKey tokenKey;
     private NamespacedKey boosterKey;
@@ -67,18 +68,33 @@ public final class EnchantGuiPlugin extends JavaPlugin {
     }
 
     public void reloadPlugin() {
-        reloadConfig();
         configManager.reload();
         attemptLogger.initialize();
         registerPlaceholderExpansion();
     }
 
+    @Override
+    public void onDisable() {
+        if (placeholderExpansion != null) {
+            placeholderExpansion.unregister();
+            placeholderExpansion = null;
+        }
+        if (attemptLogger != null) {
+            attemptLogger.close();
+        }
+    }
+
     private void registerPlaceholderExpansion() {
+        if (placeholderExpansion != null) {
+            placeholderExpansion.unregister();
+            placeholderExpansion = null;
+        }
         if (!configManager.isPlaceholderApiEnabled()) {
             return;
         }
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new EnchantGuiExpansion(this).register();
+            placeholderExpansion = new EnchantGuiExpansion(this);
+            placeholderExpansion.register();
         }
     }
 
