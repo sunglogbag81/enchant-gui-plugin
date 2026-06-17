@@ -189,6 +189,17 @@ logging:
   # SQLite DB 파일 이름
   sqlite-file: enchantgui.db
 
+# Citizens NPC 연동 설정
+citizens:
+  # true면 아래 NPC ID를 우클릭했을 때 인챈트 GUI를 엽니다.
+  enabled: false
+
+  # /npc id 로 확인한 Citizens NPC ID 목록
+  npc-ids: []
+
+  # true면 NPC 클릭으로 열 때도 enchantgui.use 권한을 요구합니다.
+  require-permission: true
+
 # 최종 확률 제한값
 chance:
   # 최종 확률 최소값

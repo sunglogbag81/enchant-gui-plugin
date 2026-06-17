@@ -4,7 +4,7 @@ main: io.github.sunglogbag81.enchantgui.EnchantGuiPlugin
 api-version: '1.20'
 author: sunglogbag81
 description: 설정 기반 GUI 인챈트 플러그인
-softdepend: [PlaceholderAPI]
+softdepend: [PlaceholderAPI, Citizens]
 commands:
   인챈트:
     description: 인챈트 GUI를 엽니다.

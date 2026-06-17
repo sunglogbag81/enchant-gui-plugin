@@ -3,6 +3,7 @@ package io.github.sunglogbag81.enchantgui;
 import io.github.sunglogbag81.enchantgui.command.EnchantCommand;
 import io.github.sunglogbag81.enchantgui.config.ConfigManager;
 import io.github.sunglogbag81.enchantgui.gui.EnchantMenuHolder;
+import io.github.sunglogbag81.enchantgui.listener.CitizensEnchantListener;
 import io.github.sunglogbag81.enchantgui.listener.EnchantGuiListener;
 import io.github.sunglogbag81.enchantgui.model.ProtectionItemDefinition;
 import io.github.sunglogbag81.enchantgui.model.SupportItemDefinition;
@@ -65,6 +66,7 @@ public final class EnchantGuiPlugin extends JavaPlugin {
         }
 
         getServer().getPluginManager().registerEvents(new EnchantGuiListener(this, configManager, enchantProcessor), this);
+        registerCitizensHook();
         registerPlaceholderExpansion();
     }
 
@@ -83,6 +85,16 @@ public final class EnchantGuiPlugin extends JavaPlugin {
         if (attemptLogger != null) {
             attemptLogger.close();
         }
+    }
+
+    private void registerCitizensHook() {
+        if (Bukkit.getPluginManager().getPlugin("Citizens") == null) {
+            if (configManager.isCitizensEnabled()) {
+                getLogger().info("Citizens 연동이 config에서 활성화되어 있지만 서버에 Citizens 플러그인이 없어 훅을 건너뜁니다.");
+            }
+            return;
+        }
+        getServer().getPluginManager().registerEvents(new CitizensEnchantListener(this, configManager), this);
     }
 
     private void registerPlaceholderExpansion() {

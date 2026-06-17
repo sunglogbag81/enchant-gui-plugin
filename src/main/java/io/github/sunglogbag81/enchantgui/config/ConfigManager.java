@@ -58,6 +58,8 @@ public final class ConfigManager {
     private boolean flatFileLoggingEnabled;
     private boolean sqliteLoggingEnabled;
     private boolean placeholderApiEnabled;
+    private boolean citizensEnabled;
+    private boolean citizensRequirePermission;
     private boolean announceSuccess;
     private boolean announceFailure;
     private double minFinalChance;
@@ -77,6 +79,7 @@ public final class ConfigManager {
     private List<String> previewReadyLore;
     private String flatFileName;
     private String sqliteFile;
+    private final Set<Integer> citizensNpcIds = new LinkedHashSet<>();
 
     private EffectSettings successSound;
     private EffectSettings failSound;
@@ -127,6 +130,8 @@ public final class ConfigManager {
         flatFileLoggingEnabled = config.getBoolean("features.enable-flat-file-logging", true);
         sqliteLoggingEnabled = config.getBoolean("features.enable-sqlite-logging", true);
         placeholderApiEnabled = config.getBoolean("features.enable-placeholderapi", true);
+        citizensEnabled = config.getBoolean("citizens.enabled", false);
+        citizensRequirePermission = config.getBoolean("citizens.require-permission", true);
         announceSuccess = config.getBoolean("features.announce-success", false);
         announceFailure = config.getBoolean("features.announce-failure", false);
 
@@ -154,6 +159,13 @@ public final class ConfigManager {
 
         flatFileName = config.getString("logging.flat-file-name", "attempts.log");
         sqliteFile = config.getString("logging.sqlite-file", "enchantgui.db");
+        citizensNpcIds.clear();
+        for (Object rawId : config.getList("citizens.npc-ids", List.of())) {
+            Integer npcId = parseOptionalInt(rawId);
+            if (npcId != null && npcId >= 0) {
+                citizensNpcIds.add(npcId);
+            }
+        }
 
         loadProtection(config.getConfigurationSection("protection-item"));
         loadTokens(config.getConfigurationSection("tokens"));
@@ -328,6 +340,20 @@ public final class ConfigManager {
         }
     }
 
+    private Integer parseOptionalInt(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        try {
+            return Integer.parseInt(String.valueOf(value).trim());
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
     public String message(String key) {
         FileConfiguration config = plugin.getConfig();
         String path = "messages." + key;
@@ -436,6 +462,9 @@ public final class ConfigManager {
     public boolean isFlatFileLoggingEnabled() { return flatFileLoggingEnabled; }
     public boolean isSqliteLoggingEnabled() { return sqliteLoggingEnabled; }
     public boolean isPlaceholderApiEnabled() { return placeholderApiEnabled; }
+    public boolean isCitizensEnabled() { return citizensEnabled; }
+    public boolean isCitizensRequirePermission() { return citizensRequirePermission; }
+    public Set<Integer> getCitizensNpcIds() { return Collections.unmodifiableSet(citizensNpcIds); }
     public boolean isAnnounceSuccess() { return announceSuccess; }
     public boolean isAnnounceFailure() { return announceFailure; }
     public double getMinFinalChance() { return minFinalChance; }
