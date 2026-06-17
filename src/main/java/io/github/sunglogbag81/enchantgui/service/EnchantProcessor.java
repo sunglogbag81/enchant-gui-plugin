@@ -5,6 +5,7 @@ import io.github.sunglogbag81.enchantgui.config.ConfigManager;
 import io.github.sunglogbag81.enchantgui.model.EnchantEntry;
 import io.github.sunglogbag81.enchantgui.model.EnchantOperation;
 import io.github.sunglogbag81.enchantgui.model.FailureSettings;
+import io.github.sunglogbag81.enchantgui.model.ProtectionItemDefinition;
 import io.github.sunglogbag81.enchantgui.model.SupportItemDefinition;
 import io.github.sunglogbag81.enchantgui.model.TokenDefinition;
 import org.bukkit.Bukkit;
@@ -53,7 +54,7 @@ public final class EnchantProcessor {
         }
 
         SupportItemDefinition booster = resolveBooster(getGuiItem(inventory, configManager.getBoosterSlot()));
-        SupportItemDefinition protection = resolveProtection(getGuiItem(inventory, configManager.getProtectionSlot()));
+        ProtectionItemDefinition protection = resolveProtection(getGuiItem(inventory, configManager.getProtectionSlot()));
 
         Map<Enchantment, Integer> resultLevels = new HashMap<>();
         List<String> appliedNames = new ArrayList<>();
@@ -134,7 +135,7 @@ public final class EnchantProcessor {
 
         TokenDefinition token = Objects.requireNonNull(resolveToken(tokenItem));
         SupportItemDefinition booster = resolveBooster(boosterItem);
-        SupportItemDefinition protection = resolveProtection(protectionItem);
+        ProtectionItemDefinition protection = resolveProtection(protectionItem);
 
         boolean success = ThreadLocalRandom.current().nextDouble(100.0D) < validation.finalChance();
         boolean protectionTriggered = false;
@@ -145,25 +146,23 @@ public final class EnchantProcessor {
             if (booster != null) {
                 consumeIfNeeded(boosterItem, booster.consumeOnSuccess());
             }
+            if (protection != null) {
+                consumeIfNeeded(protectionItem, protection.consumeOnSuccess());
+            }
             playFeedback(player, true);
             sendResultMessage(player, true, token.displayName(), validation.finalChance());
         } else {
             FailureSettings failureSettings = token.failureSettings();
-            boolean destructive = failureSettings.destroyItemOnFail()
-                    || failureSettings.removeTargetEnchantsOnFail()
-                    || failureSettings.downgradeTargetEnchantsOnFail() > 0;
-            protectionTriggered = destructive && protection != null && protection.enabled() && configManager.isProtectionItemsEnabled();
+            protectionTriggered = applyFailurePenalty(item, token, failureSettings, protection);
             if (protectionTriggered) {
                 configManager.sendMessage(player, "protected-fail");
-                if (protection.consumeOnSuccess()) {
-                    consumeIfNeeded(protectionItem, true);
-                }
-            } else {
-                applyFailurePenalty(item, token, failureSettings);
             }
             consumeIfNeeded(tokenItem, configManager.isConsumeTokenOnFail());
             if (booster != null) {
                 consumeIfNeeded(boosterItem, booster.consumeOnFail());
+            }
+            if (protection != null && (protection.consumeOnFail() || (protectionTriggered && protection.consumeOnTrigger()))) {
+                consumeIfNeeded(protectionItem, true);
             }
             playFeedback(player, false);
             sendResultMessage(player, false, token.displayName(), validation.finalChance());
@@ -211,37 +210,59 @@ public final class EnchantProcessor {
         }
     }
 
-    private void applyFailurePenalty(ItemStack item, TokenDefinition token, FailureSettings failureSettings) {
+    private boolean applyFailurePenalty(ItemStack item,
+                                        TokenDefinition token,
+                                        FailureSettings failureSettings,
+                                        ProtectionItemDefinition protection) {
+        boolean protectionActive = protection != null && protection.enabled() && configManager.isProtectionItemsEnabled();
+        boolean protectedAny = false;
+
         if (failureSettings.destroyItemOnFail()) {
-            item.setAmount(0);
-            return;
-        }
-        if (failureSettings.removeTargetEnchantsOnFail()) {
-            for (EnchantEntry entry : token.enchants()) {
-                entry.resolve().ifPresent(item::removeEnchantment);
+            if (protectionActive && protection.protectDestroyOnFail()) {
+                protectedAny = true;
+            } else {
+                item.setAmount(0);
+                return protectedAny;
             }
         }
+
+        if (failureSettings.removeTargetEnchantsOnFail()) {
+            if (protectionActive && protection.protectRemoveTargetEnchantsOnFail()) {
+                protectedAny = true;
+            } else {
+                for (EnchantEntry entry : token.enchants()) {
+                    entry.resolve().ifPresent(item::removeEnchantment);
+                }
+            }
+        }
+
         if (failureSettings.downgradeTargetEnchantsOnFail() > 0) {
-            for (EnchantEntry entry : token.enchants()) {
-                Enchantment enchantment = entry.resolve().orElse(null);
-                if (enchantment == null) {
-                    continue;
-                }
-                int current = item.getEnchantmentLevel(enchantment);
-                if (current <= 0) {
-                    continue;
-                }
-                int next = Math.max(0, current - failureSettings.downgradeTargetEnchantsOnFail());
-                item.removeEnchantment(enchantment);
-                if (next > 0) {
-                    if (configManager.isAllowUnsafeEnchants()) {
-                        item.addUnsafeEnchantment(enchantment, next);
-                    } else {
-                        item.addEnchantment(enchantment, next);
+            if (protectionActive && protection.protectDowngradeTargetEnchantsOnFail()) {
+                protectedAny = true;
+            } else {
+                for (EnchantEntry entry : token.enchants()) {
+                    Enchantment enchantment = entry.resolve().orElse(null);
+                    if (enchantment == null) {
+                        continue;
+                    }
+                    int current = item.getEnchantmentLevel(enchantment);
+                    if (current <= 0) {
+                        continue;
+                    }
+                    int next = Math.max(0, current - failureSettings.downgradeTargetEnchantsOnFail());
+                    item.removeEnchantment(enchantment);
+                    if (next > 0) {
+                        if (configManager.isAllowUnsafeEnchants()) {
+                            item.addUnsafeEnchantment(enchantment, next);
+                        } else {
+                            item.addEnchantment(enchantment, next);
+                        }
                     }
                 }
             }
         }
+
+        return protectedAny;
     }
 
     private void playFeedback(Player player, boolean success) {
@@ -334,11 +355,11 @@ public final class EnchantProcessor {
         return null;
     }
 
-    public SupportItemDefinition resolveProtection(ItemStack itemStack) {
+    public ProtectionItemDefinition resolveProtection(ItemStack itemStack) {
         if (!configManager.isProtectionItemsEnabled() || isEmpty(itemStack)) {
             return null;
         }
-        SupportItemDefinition protection = configManager.getProtectionItem();
+        ProtectionItemDefinition protection = configManager.getProtectionItem();
         if (protection == null) {
             return null;
         }

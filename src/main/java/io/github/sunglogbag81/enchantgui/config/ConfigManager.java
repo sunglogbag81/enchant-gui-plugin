@@ -3,6 +3,7 @@ package io.github.sunglogbag81.enchantgui.config;
 import io.github.sunglogbag81.enchantgui.model.EnchantEntry;
 import io.github.sunglogbag81.enchantgui.model.EnchantOperation;
 import io.github.sunglogbag81.enchantgui.model.FailureSettings;
+import io.github.sunglogbag81.enchantgui.model.ProtectionItemDefinition;
 import io.github.sunglogbag81.enchantgui.model.SupportItemDefinition;
 import io.github.sunglogbag81.enchantgui.model.TokenDefinition;
 import io.github.sunglogbag81.enchantgui.util.ColorUtil;
@@ -69,7 +70,7 @@ public final class ConfigManager {
     private boolean destroyItemOnFail;
     private boolean removeTargetEnchantsOnFail;
     private int downgradeTargetEnchantsOnFail;
-    private SupportItemDefinition protectionItem;
+    private ProtectionItemDefinition protectionItem;
     private String previewWaitingName;
     private List<String> previewWaitingLore;
     private String previewReadyName;
@@ -164,15 +165,18 @@ public final class ConfigManager {
             protectionItem = null;
             return;
         }
-        protectionItem = new SupportItemDefinition(
+        protectionItem = new ProtectionItemDefinition(
                 section.getString("key", "basic_guard"),
                 section.getBoolean("enabled", true),
                 material(section.getString("material"), Material.TOTEM_OF_UNDYING),
                 ColorUtil.colorize(section.getString("display-name", "&e강화 보호권")),
                 ColorUtil.colorize(section.getStringList("lore")),
-                0.0D,
-                section.getBoolean("consume-on-trigger", true),
-                section.getBoolean("consume-on-trigger", true)
+                section.getBoolean("consume-on-success", false),
+                section.getBoolean("consume-on-fail", false),
+                section.getBoolean("consume-on-trigger", consumeProtectionOnTrigger),
+                section.getBoolean("protect-destroy-on-fail", true),
+                section.getBoolean("protect-remove-target-enchants-on-fail", true),
+                section.getBoolean("protect-downgrade-target-enchants-on-fail", true)
         );
     }
 
@@ -444,7 +448,7 @@ public final class ConfigManager {
     public boolean isDestroyItemOnFail() { return destroyItemOnFail; }
     public boolean isRemoveTargetEnchantsOnFail() { return removeTargetEnchantsOnFail; }
     public int getDowngradeTargetEnchantsOnFail() { return downgradeTargetEnchantsOnFail; }
-    public SupportItemDefinition getProtectionItem() { return protectionItem; }
+    public ProtectionItemDefinition getProtectionItem() { return protectionItem; }
     public String getPreviewWaitingName() { return previewWaitingName; }
     public List<String> getPreviewWaitingLore() { return previewWaitingLore; }
     public String getPreviewReadyName() { return previewReadyName; }

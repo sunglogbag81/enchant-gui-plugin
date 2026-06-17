@@ -4,6 +4,7 @@ import io.github.sunglogbag81.enchantgui.command.EnchantCommand;
 import io.github.sunglogbag81.enchantgui.config.ConfigManager;
 import io.github.sunglogbag81.enchantgui.gui.EnchantMenuHolder;
 import io.github.sunglogbag81.enchantgui.listener.EnchantGuiListener;
+import io.github.sunglogbag81.enchantgui.model.ProtectionItemDefinition;
 import io.github.sunglogbag81.enchantgui.model.SupportItemDefinition;
 import io.github.sunglogbag81.enchantgui.model.TokenDefinition;
 import io.github.sunglogbag81.enchantgui.placeholder.EnchantGuiExpansion;
@@ -180,7 +181,7 @@ public final class EnchantGuiPlugin extends JavaPlugin {
     }
 
     public ItemStack createProtectionItem() {
-        SupportItemDefinition protectionItem = configManager.getProtectionItem();
+        ProtectionItemDefinition protectionItem = configManager.getProtectionItem();
         if (protectionItem == null) {
             return new ItemStack(Material.TOTEM_OF_UNDYING);
         }

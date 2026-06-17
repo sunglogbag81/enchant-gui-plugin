@@ -312,6 +312,20 @@ preview:
     - "&7클릭하여 강화 시도"
 
 # 보호권 설정
+#
+# 보호권은 "강화 실패 자체를 성공으로 바꾸는 아이템"이 아닙니다.
+# 대신 실패 시 발생할 수 있는 패널티를 항목별로 막을 수 있습니다.
+#
+# 예시:
+# - destroy-item-on-fail: true 인 토큰 -> 장비 파괴만 막기
+# - downgrade-target-enchants-on-fail: 1 인 토큰 -> 단계 하락만 막기
+# - remove-target-enchants-on-fail: true 인 토큰 -> 인챈트 제거만 막기
+#
+# 아래 옵션을 조합하면
+# - 성공 시에도 보호권 소모
+# - 실패 시 항상 보호권 소모
+# - 실제로 보호 효과가 발동했을 때만 소모
+# 를 전부 설정할 수 있습니다.
 protection-item:
   # 보호권 기능 자체 활성화 여부
   enabled: true
@@ -330,8 +344,23 @@ protection-item:
     - "&7실패 시 장비 파괴/하락 패널티를"
     - "&7한 번 막아줍니다."
 
-  # 실제 발동 시 아이템 소모 여부
+  # 강화 성공 시에도 보호권을 소모할지 여부
+  consume-on-success: false
+
+  # 강화 실패 시 보호 발동 여부와 무관하게 소모할지 여부
+  consume-on-fail: false
+
+  # 실제로 보호 효과가 발동했을 때 소모할지 여부
   consume-on-trigger: true
+
+  # 실패 시 장비 파괴를 막을지 여부
+  protect-destroy-on-fail: true
+
+  # 실패 시 대상 인챈트 제거를 막을지 여부
+  protect-remove-target-enchants-on-fail: true
+
+  # 실패 시 대상 인챈트 단계 하락을 막을지 여부
+  protect-downgrade-target-enchants-on-fail: true
 
 # 강화권 목록
 # 각 키(sharpness_1 등)는 관리자 지급 명령에 사용됩니다.
